@@ -1,0 +1,43 @@
+{
+  "httpMethod": "POST",
+  "body": "{\"name\":\"Amit Gupta\",\"specilization\":\"General Physician\",\"email\":\"abc@gmail.com\",\"mobile\":\"891737283\",\"address\":\"ABC hospital\"}",
+
+  "queryStringParameters": null,
+  "multiValueQueryStringParameters": null,
+  "headers": {
+    "Host": "127.0.0.1:3000",
+    "User-Agent": "curl/7.47.0",
+    "Accept": "*/*",
+    "Content-Type": "application/json",
+    "Content-Length": "149",
+    "X-Forwarded-Proto": "http",
+    "X-Forwarded-Port": "3000"
+  },
+  "multiValueHeaders": {
+    "Host": [
+      "127.0.0.1:3000"
+    ],
+    "User-Agent": [
+      "curl/7.47.0"
+    ],
+    "Accept": [
+      "*/*"
+    ],
+    "Content-Type": [
+      "application/json"
+    ],
+    "Content-Length": [
+      "149"
+    ],
+    "X-Forwarded-Proto": [
+      "http"
+    ],
+    "X-Forwarded-Port": [
+      "3000"
+    ]
+  },
+  "pathParameters": null,
+  "stageVariables": null,
+  "path": "/",
+  "isBase64Encoded": false
+}

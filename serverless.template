@@ -1,0 +1,239 @@
+{
+  "Description": "Healthcare service.",
+  "Parameters" : {
+    "ProviderTableName" : {
+        "Type" : "String",
+        "Description" : "Name of DynamoDB table used to store the Provider metadata. If left blank, AWS CloudFormation would manage this resource.",
+        "MinLength" : "0"
+      },
+    "PatientTableName" : {
+        "Type" : "String",
+        "Description" : "Name of DynamoDB table used to store the Patient metadata. If left blank, AWS CloudFormation would manage this resource.",
+        "MinLength" : "0"
+      },
+    "DeviceTableName" : {
+        "Type" : "String",
+        "Description" : "Name of DynamoDB table used to store the Decice metadata. If left blank, AWS CloudFormation would manage this resource.",
+        "MinLength" : "0"
+      },            
+    "ReadCapacity" : {
+        "Type" : "Number",
+        "Description" : "Read capacity for the DynamoDB blog table.",
+        "Default" : "3",
+        "MinValue" : 1
+    },
+    "WriteCapacity" : {
+        "Type" : "Number",
+        "Description" : "Write capacity for the DynamoDB blog table.",
+        "Default" : "3",
+        "MinValue" : 1
+    }
+  },
+  "Conditions" : {
+    "CreateProviderTable" : {"Fn::Equals" : [{"Ref" : "ProviderTableName"}, ""]}
+  },
+  "Resources": {
+    "GetProviderHandler": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "Handler": "com.amazonaws.healthcare.function.GetProviderHandler",
+        "Runtime" : "java8",
+        "CodeUri" : "./target/healthcare-1.0.0.jar",
+        "Policies": [
+          "AmazonDynamoDBReadOnlyAccess"
+        ],
+        "Environment" : {
+          "Variables" : {
+            "PROVIDER_TABLE_NAME" : { "Fn::If" : ["CreateProviderTable", {"Ref":"ProviderTable"}, { "Ref" : "ProviderTableName" } ] }
+          }
+        },
+        "Events": {
+          "GetResource": {
+            "Type": "Api",
+            "Properties": {
+              "Path": "/",
+              "Method": "get"
+            }
+          }
+        }
+      }
+    },
+    "PostProviderHandler": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "Handler": "com.amazonaws.healthcare.function.PostProviderHandler",
+        "Runtime" : "java8",
+        "CodeUri" : "./target/healthcare-1.0.0.jar",
+        "Policies": [
+          "AmazonDynamoDBFullAccess"
+        ],
+        "Environment" : {
+          "Variables" : {
+            "PROVIDER_TABLE_NAME" : { "Fn::If" : ["CreateProviderTable", {"Ref":"ProviderTable"}, { "Ref" : "ProviderTableName" } ] }
+          }
+        },
+        "Events": {
+          "PutResource": {
+            "Type": "Api",
+            "Properties": {
+              "Path": "/",
+              "Method": "post"
+            }
+          }
+        }
+      }
+    },
+    "PostPatientHandler": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "Handler": "com.amazonaws.healthcare.function.PostPatientHandler",
+        "Runtime" : "java8",
+        "CodeUri" : "./target/healthcare-1.0.0.jar",
+        "Policies": [
+          "AmazonDynamoDBFullAccess"
+        ],
+        "Environment" : {
+          "Variables" : {
+            "PATIENT_TABLE_NAME" : { "Fn::If" : ["CreatePatientTable", {"Ref":"PatientTable"}, { "Ref" : "PatientTableName" } ] }
+          }
+        },
+        "Events": {
+          "PutResource": {
+            "Type": "Api",
+            "Properties": {
+              "Path": "/",
+              "Method": "post"
+            }
+          }
+        }
+      }
+    },
+    "PostDeviceHandler": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "Handler": "com.amazonaws.healthcare.function.PostDeviceHandler",
+        "Runtime" : "java8",
+        "CodeUri" : "./target/healthcare-1.0.0.jar",
+        "Policies": [
+          "AmazonDynamoDBFullAccess"
+        ],
+        "Environment" : {
+          "Variables" : {
+            "DEVICE_TABLE_NAME" : { "Fn::If" : ["CreateDeviceTable", {"Ref":"DeviceTable"}, { "Ref" : "DeviceTableName" } ] }
+          }
+        },
+        "Events": {
+          "PutResource": {
+            "Type": "Api",
+            "Properties": {
+              "Path": "/",
+              "Method": "post"
+            }
+          }
+        }
+      }
+    },        
+    "ProviderTable": {
+      "Type": "AWS::DynamoDB::Table",
+      "Condition" : "CreateProviderTable",
+      "Properties": {
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "id",
+            "AttributeType": "S"
+          },
+          {
+            "AttributeName": "mobile_number",
+            "AttributeType": "S"
+          }
+        ],
+        "KeySchema": [
+          {
+            "AttributeName": "id",
+            "KeyType": "HASH"
+          },
+          {
+            "AttributeName": "mobile_number",
+            "KeyType": "RANGE"
+          }
+        ],
+        "ProvisionedThroughput": {
+          "ReadCapacityUnits": {"Ref" : "ReadCapacity"},
+          "WriteCapacityUnits": {"Ref" : "WriteCapacity"}
+        }
+      }
+    },
+      "PatientTable": {
+      "Type": "AWS::DynamoDB::Table",
+      "Condition" : "CreatePatientTable",
+      "Properties": {
+        "AttributeDefinitions": [
+          {
+            "AttributeName": "id",
+            "AttributeType": "S"
+          },
+          {
+            "AttributeName": "provider_id",
+            "AttributeType": "S"
+          }
+        ],
+        "KeySchema": [
+          {
+            "AttributeName": "id",
+            "KeyType": "HASH"
+          },
+          {
+            "AttributeName": "provider_id",
+            "KeyType": "RANGE"
+          }
+        ],
+        "ProvisionedThroughput": {
+          "ReadCapacityUnits": {"Ref" : "ReadCapacity"},
+          "WriteCapacityUnits": {"Ref" : "WriteCapacity"}
+        }
+      }
+    },
+	  "DeviceTable": {
+	  "Type": "AWS::DynamoDB::Table",
+	  "Condition" : "CreateDeviceTable",
+	  "Properties": {
+	    "AttributeDefinitions": [
+	      {
+	        "AttributeName": "id",
+	        "AttributeType": "S"
+	      },
+	      {
+	        "AttributeName": "patiend_id",
+	        "AttributeType": "S"
+	      }
+	    ],
+	    "KeySchema": [
+	      {
+	        "AttributeName": "id",
+	        "KeyType": "HASH"
+	      },
+	      {
+	        "AttributeName": "patiend_id",
+	        "KeyType": "RANGE"
+	      }
+	    ],
+	    "ProvisionedThroughput": {
+	      "ReadCapacityUnits": {"Ref" : "ReadCapacity"},
+	      "WriteCapacityUnits": {"Ref" : "WriteCapacity"}
+	    }
+	  }
+	}
+  }
+  },
+  "Outputs" : {
+    "ProviderTable" : {
+      "Value" : { "Fn::If" : ["CreateProviderTable", {"Ref":"ProviderTable"}, { "Ref" : "ProviderTableName" } ] }
+    },
+    "PatientTable" : {
+      "Value" : { "Fn::If" : ["CreatePatientTable", {"Ref":"PatientTable"}, { "Ref" : "PatientTableName" } ] }
+    },
+    "DeviceTable" : {
+      "Value" : { "Fn::If" : ["CreateDeviceTable", {"Ref":"DeviceTable"}, { "Ref" : "DeviceTableName" } ] }
+    }        
+  }
+}
