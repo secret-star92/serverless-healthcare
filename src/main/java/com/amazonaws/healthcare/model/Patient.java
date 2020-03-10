@@ -3,13 +3,13 @@
  */
 package com.amazonaws.healthcare.model;
 
+import java.sql.Date;
 import java.util.Base64;
-import java.util.Date;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
-import lombok.Builder;
 import lombok.Data;
 
 /**
@@ -17,7 +17,6 @@ import lombok.Data;
  *
  */
 @Data
-@Builder
 public class Patient {
 
 	public String getId() {
@@ -51,7 +50,7 @@ public class Patient {
 	String mobileNumber;
 	@NotEmpty
 	String address;
-	@NotEmpty
+	@NotNull
 	Date dateOfBirth;
 
 }

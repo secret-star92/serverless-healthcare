@@ -41,8 +41,9 @@ public class PostPatientHandler implements RequestStreamHandler {
 		ServerlessOutput serverlessOutput = new ServerlessOutput();
 		try {
 			ServerlessInput serverlessInput = JsonUtil.parseObjectFromStream(input, ServerlessInput.class);
-
-			String patientStr = (String) serverlessInput.getBody();
+			
+			String patientStr = serverlessInput.getBody();
+			logger.log(String.format("patient payload  %s", patientStr));
 			Patient patient = JsonUtil.parseObjectFromBytes(patientStr.getBytes(), Patient.class);
 
 			boolean isValid = new EntityValidator<>().validate.isValid(patient, errorMessages);

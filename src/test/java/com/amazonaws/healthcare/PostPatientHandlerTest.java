@@ -1,12 +1,9 @@
 package com.amazonaws.healthcare;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -17,17 +14,16 @@ import org.junit.Test;
 
 import com.amazonaws.healthcare.function.PatientHandler;
 import com.amazonaws.healthcare.model.EntityValidator;
-import com.amazonaws.healthcare.model.Provider;
+import com.amazonaws.healthcare.model.Patient;
 import com.amazonaws.healthcare.model.ServerlessInput;
 import com.amazonaws.healthcare.util.JsonUtil;
 import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
 /**
  * A simple test harness for locally invoking your Lambda function handler.
  */
-public class PostProviderHandlerTest {
+public class PostPatientHandlerTest {
 
     private static final String SAMPLE_INPUT_STRING = "{\"foo\": \"bar\"}";
     private static final String EXPECTED_OUTPUT_STRING = "{\"FOO\": \"BAR\"}";
@@ -75,7 +71,7 @@ public class PostProviderHandlerTest {
     public void testRequestToServerlessInput() throws JsonParseException, JsonMappingException, IOException {
     	
     	InputStream inputStream = getClass()
-    			.getClassLoader().getResourceAsStream("providerPayload.json");
+    			.getClassLoader().getResourceAsStream("patientPayload.json");
 
     	Set<String> errorMessages=new LinkedHashSet<>();
     	/*ServerlessInput<String> input=JsonUtil.parseObjectFromStream(inputStream, new TypeReference<ServerlessInput<String>>() {
@@ -84,17 +80,19 @@ public class PostProviderHandlerTest {
     	ServerlessInput input=JsonUtil.parseObjectFromStream(inputStream, ServerlessInput.class);
     	
     	
-    	String body= (String) input.getBody();
-    	Provider provider=JsonUtil.parseObjectFromBytes(body.getBytes(), Provider.class);
+    	String body= input.getBody();
+    	
+    	System.out.println(body);
+    	Patient patient=JsonUtil.parseObjectFromBytes(body.getBytes(), Patient.class);
     	
 		
-    	 boolean isValid=new EntityValidator<>().validate.isValid(provider, errorMessages);
+    	 boolean isValid=new EntityValidator<>().validate.isValid(patient, errorMessages);
     	 
     	 
     	 System.out.println(JsonUtil.convertToString(errorMessages) );
  		
     	
-    	System.out.println(provider.getId());
+    	System.out.println(patient.getId());
     	
     	
     }

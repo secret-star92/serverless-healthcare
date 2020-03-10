@@ -30,7 +30,9 @@
     }
   },
   "Conditions" : {
-    "CreateProviderTable" : {"Fn::Equals" : [{"Ref" : "ProviderTableName"}, ""]}
+    "CreateProviderTable" : {"Fn::Equals" : [{"Ref" : "ProviderTableName"}, ""]},
+    "CreatePatientTable" : {"Fn::Equals" : [{"Ref" : "PatientTableName"}, ""]},
+    "CreateDeviceTable" : {"Fn::Equals" : [{"Ref" : "DeviceTableName"}, ""]}
   },
   "Resources": {
     "GetProviderHandler": {
@@ -51,7 +53,7 @@
           "GetResource": {
             "Type": "Api",
             "Properties": {
-              "Path": "/",
+              "Path": "/providers",
               "Method": "get"
             }
           }
@@ -76,7 +78,7 @@
           "PutResource": {
             "Type": "Api",
             "Properties": {
-              "Path": "/",
+              "Path": "/providers",
               "Method": "post"
             }
           }
@@ -101,7 +103,7 @@
           "PutResource": {
             "Type": "Api",
             "Properties": {
-              "Path": "/",
+              "Path": "/patients",
               "Method": "post"
             }
           }
@@ -126,7 +128,7 @@
           "PutResource": {
             "Type": "Api",
             "Properties": {
-              "Path": "/",
+              "Path": "/devices",
               "Method": "post"
             }
           }
@@ -203,7 +205,7 @@
 	        "AttributeType": "S"
 	      },
 	      {
-	        "AttributeName": "patiend_id",
+	        "AttributeName": "patient_id",
 	        "AttributeType": "S"
 	      }
 	    ],

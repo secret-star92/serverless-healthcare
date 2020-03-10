@@ -8,8 +8,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import com.amazonaws.healthcare.model.EntityValidator;
 import com.amazonaws.healthcare.model.Device;
+import com.amazonaws.healthcare.model.EntityValidator;
 import com.amazonaws.healthcare.model.ServerlessInput;
 import com.amazonaws.healthcare.model.ServerlessOutput;
 import com.amazonaws.healthcare.util.JsonUtil;
@@ -30,7 +30,7 @@ public class PostDeviceHandler implements RequestStreamHandler {
 	// DynamoDB table attribute name for storing device id.
 	private static final String DEVICE_TABLE_ID_NAME = "id";
 	// DynamoDB table attribute name for sort key
-	private static final String DEVICE_TABLE_KEY_NAME = "patiend_id";
+	private static final String DEVICE_TABLE_KEY_NAME = "patient_id";
 
 	@Override
 	public void handleRequest(InputStream input, OutputStream output, Context context) throws IOException {
@@ -53,7 +53,7 @@ public class PostDeviceHandler implements RequestStreamHandler {
 				
 				Map<String, AttributeValue> attributes = InternalUtils.toAttributeValues(Item.fromJSON(deviceStr));
 				attributes.putIfAbsent(DEVICE_TABLE_ID_NAME, new AttributeValue().withS(device.getId()));
-				attributes.put(DEVICE_TABLE_KEY_NAME, new AttributeValue().withS(device.getPatiendId()));
+				attributes.put(DEVICE_TABLE_KEY_NAME, new AttributeValue().withS(device.getPatientId()));
 
 				addAttributes(attributes);
 

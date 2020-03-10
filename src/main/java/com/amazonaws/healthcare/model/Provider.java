@@ -7,6 +7,7 @@ import java.util.Base64;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 import com.amazonaws.healthcare.util.ProviderStatus;
 
@@ -36,6 +37,7 @@ public class Provider {
 	String mobileNumber;
 	@NotEmpty
 	String address;
+	@NotNull
 	ProviderStatus status;
 
 }

@@ -1,6 +1,6 @@
 {
   "httpMethod": "POST",
-  "body": "{\"name\":\"Amit Gupta\",\"specilization\":\"General Physician\",\"email\":\"abc@gmail.com\",\"mobile\":\"891737283\",\"address\":\"ABC hospital\"}",
+  "body": "{\"firstname\":\"Amit\",\"lastname\":\"Gupta\",\"specilization\":\"General Physician\",\"email\":\"abc@gmail.com\",\"mobileNumber\":\"891737283\",\"address\":\"ABC hospital\"}",
 
   "queryStringParameters": null,
   "multiValueQueryStringParameters": null,

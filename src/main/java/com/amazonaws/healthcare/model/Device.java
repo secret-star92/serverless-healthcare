@@ -4,10 +4,10 @@
 package com.amazonaws.healthcare.model;
 
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 import com.amazonaws.healthcare.util.SensorType;
 
-import lombok.Builder;
 import lombok.Data;
 
 /**
@@ -15,20 +15,19 @@ import lombok.Data;
  *
  */
 @Data
-@Builder
 public class Device {
 	//UUID 
 	String id;
 	@NotEmpty
-	String patiendId;
+	String patientId;
 	@NotEmpty
 	String deviceName;
-	@NotEmpty
+	@NotNull
 	SensorType type;
 	@NotEmpty
 	String ipAddress;
-	@NotEmpty
-	int port;
+	@NotNull
+	Integer port;
 	@NotEmpty
 	String protocal;
 
