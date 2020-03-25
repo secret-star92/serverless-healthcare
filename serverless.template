@@ -1,11 +1,31 @@
 {
   "Description": "Healthcare service.",
   "Parameters" : {
-    "ProviderTableName" : {
+    "CognitoUserPoolId" : {
+        "Type" : "String",
+        "Description" : "Cognito USER POOL id.",
+        "MinLength" : "1"
+      },     
+    "CognitoClientAppId" : {
+        "Type" : "String",
+        "Description" : "Cognito client app id.",
+        "MinLength" : "1"
+      },    
+    "SecretHash" : {
+        "Type" : "String",
+        "Description" : "Cognito SecretHash.",
+        "MinLength" : "1"
+      },
+    "Region" : {
+        "Type" : "String",
+        "Description" : "AWS User region.",
+        "MinLength" : "1"
+      },
+   "ProviderTableName" : {
         "Type" : "String",
         "Description" : "Name of DynamoDB table used to store the Provider metadata. If left blank, AWS CloudFormation would manage this resource.",
         "MinLength" : "0"
-      },
+      },            
     "PatientTableName" : {
         "Type" : "String",
         "Description" : "Name of DynamoDB table used to store the Patient metadata. If left blank, AWS CloudFormation would manage this resource.",
@@ -35,6 +55,61 @@
     "CreateDeviceTable" : {"Fn::Equals" : [{"Ref" : "DeviceTableName"}, ""]}
   },
   "Resources": {
+    "PostSignInHandler": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "Handler": "com.amazonaws.healthcare.function.PostSignInHandler",
+        "Runtime" : "java8",
+        "CodeUri" : "./target/healthcare-1.0.0.jar",
+        "Policies": [
+          "AmazonESCognitoAccess", "AWSLambdaFullAccess"
+        ],
+        "Environment" : {
+          "Variables" : {
+            "USER_POOL_ID" : { "Ref" : "CognitoUserPoolId" },
+            "CLIENT_APP_ID" : { "Ref" : "CognitoClientAppId" },
+            "SECRET_HASH" : { "Ref" : "SecretHash" },
+            "REGION" : { "Ref" : "Region" }
+          }
+        },
+        "Events": {
+          "GetResource": {
+            "Type": "Api",
+            "Properties": {
+              "Path": "/signin",
+              "Method": "post"
+            }
+          }
+        }
+      }
+    },    
+    "PostSignUpHandler": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "Handler": "com.amazonaws.healthcare.function.PostSignUpHandler",
+        "Runtime" : "java8",
+        "CodeUri" : "./target/healthcare-1.0.0.jar",
+        "Policies": [
+          "AmazonESCognitoAccess", "AWSLambdaFullAccess"
+        ],
+        "Environment" : {
+          "Variables" : {
+            "CLIENT_APP_ID" : { "Ref" : "CognitoClientAppId" },
+            "SECRET_HASH" : { "Ref" : "SecretHash" },
+            "REGION" : { "Ref" : "Region" }
+          }
+        },
+        "Events": {
+          "GetResource": {
+            "Type": "Api",
+            "Properties": {
+              "Path": "/signup",
+              "Method": "post"
+            }
+          }
+        }
+      }
+    },    
     "GetProviderHandler": {
       "Type": "AWS::Serverless::Function",
       "Properties": {
