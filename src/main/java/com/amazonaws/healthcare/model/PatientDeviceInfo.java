@@ -9,26 +9,22 @@ import javax.validation.constraints.NotNull;
 import com.amazonaws.healthcare.util.SensorType;
 
 import lombok.Data;
+import lombok.ToString;
 
 /**
  * @author yashvant
  *
  */
 @Data
-public class Device {
-	//UUID 
-	String id;
-	@NotNull
-	SensorType type;	
-	//@NotEmpty
-	//String patientId;
-	@NotEmpty
-	String deviceName;
-	@NotEmpty
-	String ipAddress;
-	@NotNull
-	Integer port;
-	@NotEmpty
-	String protocal;
+@ToString
+public class PatientDeviceInfo {
 
+	@NotEmpty
+	String patientId;
+	@NotEmpty
+	String deviceId;
+	@NotNull
+	SensorType sensorType;	
+	@NotNull
+	DeviceStatus status;
 }

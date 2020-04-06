@@ -8,26 +8,23 @@ import java.util.Map;
 import java.util.Set;
 
 import com.amazonaws.healthcare.model.EntityValidator;
-import com.amazonaws.healthcare.model.Patient;
+import com.amazonaws.healthcare.model.PatientDeviceInfo;
 import com.amazonaws.healthcare.model.ServerlessInput;
 import com.amazonaws.healthcare.model.ServerlessOutput;
 import com.amazonaws.healthcare.util.JsonUtil;
 import com.amazonaws.healthcare.util.StatusCode;
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.internal.InternalUtils;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
-import com.amazonaws.services.dynamodbv2.model.PutItemRequest;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 
-public class PostPatientHandler implements RequestStreamHandler, DynamodbHandler {
+public class PostPatientDeviceHandler implements RequestStreamHandler, DynamodbHandler {
 	// DynamoDB table attribute name for storing patient id.
-	private static final String PATIENT_TABLE_ID_NAME = "id";
+	private static final String PATIENT_DEVICE_TABLE_ID_NAME = "patientId";
 	// DynamoDB table attribute name for sort key
-	private static final String PATIENT_TABLE_KEY_NAME = "provider_id";
+	private static final String PATIENT_DEVICE__TABLE_KEY_NAME = "deviceId";
 
 	@Override
 	public void handleRequest(InputStream input, OutputStream output, Context context) throws IOException {
@@ -35,27 +32,27 @@ public class PostPatientHandler implements RequestStreamHandler, DynamodbHandler
 
 		Set<String> errorMessages = new LinkedHashSet<>();
 
-		logger.log(String.format("Patient table name from system environment %s", Constants.PATIENT_TABLE_NAME));
+		logger.log(String.format("Patient table name from system environment %s", Constants.PATIENT_DEVICE_TABLE_NAME));
 		ServerlessOutput serverlessOutput = new ServerlessOutput();
 		try {
 			ServerlessInput serverlessInput = JsonUtil.parseObjectFromStream(input, ServerlessInput.class);
 			
-			String patientStr = serverlessInput.getBody();
-			logger.log(String.format("patient payload  %s", patientStr));
-			Patient patient = JsonUtil.parseObjectFromBytes(patientStr.getBytes(), Patient.class);
+			String patientDeviceInfoStr = serverlessInput.getBody();
+			logger.log(String.format("Patient Device InfoStr payload  %s", patientDeviceInfoStr));
+			PatientDeviceInfo patientDeviceInfo = JsonUtil.parseObjectFromBytes(patientDeviceInfoStr.getBytes(), PatientDeviceInfo.class);
 
-			boolean isValid = new EntityValidator<>().validate.isValid(patient, errorMessages);
+			boolean isValid = new EntityValidator<>().validate.isValid(patientDeviceInfo, errorMessages);
 
 			if (isValid) {
 
-				Map<String, AttributeValue> attributes = InternalUtils.toAttributeValues(Item.fromJSON(patientStr));
-				attributes.putIfAbsent(PATIENT_TABLE_ID_NAME, new AttributeValue().withS(patient.getId()));
-				attributes.put(PATIENT_TABLE_KEY_NAME, new AttributeValue().withS(patient.getProviderId()));
+				Map<String, AttributeValue> attributes = InternalUtils.toAttributeValues(Item.fromJSON(patientDeviceInfoStr));
+				attributes.putIfAbsent(PATIENT_DEVICE_TABLE_ID_NAME, new AttributeValue().withS(patientDeviceInfo.getPatientId()));
+				attributes.put(PATIENT_DEVICE__TABLE_KEY_NAME, new AttributeValue().withS(patientDeviceInfo.getDeviceId()));
 
-				addAttributes(Constants.PATIENT_TABLE_NAME, attributes);
+				addAttributes(Constants.PATIENT_DEVICE_TABLE_NAME, attributes);
 
 				serverlessOutput.setStatusCode(StatusCode.SUCCESS.getCode());
-				serverlessOutput.setBody(JsonUtil.convertToString(patient));
+				serverlessOutput.setBody(JsonUtil.convertToString(patientDeviceInfo));
 			} else {
 				serverlessOutput.setStatusCode(StatusCode.VALICATION_FAILED.getCode());
 				serverlessOutput.setBody(JsonUtil.convertToString(errorMessages));

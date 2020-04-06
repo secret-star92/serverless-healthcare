@@ -14,23 +14,18 @@ import com.amazonaws.healthcare.model.ServerlessInput;
 import com.amazonaws.healthcare.model.ServerlessOutput;
 import com.amazonaws.healthcare.util.JsonUtil;
 import com.amazonaws.healthcare.util.StatusCode;
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.internal.InternalUtils;
 import com.amazonaws.services.dynamodbv2.model.AttributeValue;
-import com.amazonaws.services.dynamodbv2.model.PutItemRequest;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 
-public class PostDeviceHandler implements RequestStreamHandler {
-	// DynamoDB table name for storing Device metadata.
-	private static final String DEVICE_TABLE_NAME = System.getenv("DEVICE_TABLE_NAME");
+public class PostDeviceHandler implements RequestStreamHandler, DynamodbHandler {
 	// DynamoDB table attribute name for storing device id.
 	private static final String DEVICE_TABLE_ID_NAME = "id";
 	// DynamoDB table attribute name for sort key
-	private static final String DEVICE_TABLE_KEY_NAME = "patient_id";
+	private static final String DEVICE_TABLE_KEY_NAME = "type";
 
 	@Override
 	public void handleRequest(InputStream input, OutputStream output, Context context) throws IOException {
@@ -38,7 +33,7 @@ public class PostDeviceHandler implements RequestStreamHandler {
 
 		Set<String> errorMessages = new LinkedHashSet<>();
 
-		logger.log(String.format("Device table name from system environment %s", DEVICE_TABLE_NAME));
+		logger.log(String.format("Device table name from system environment %s", Constants.DEVICE_TABLE_NAME));
 		ServerlessOutput serverlessOutput = new ServerlessOutput();
 		try {
 			ServerlessInput serverlessInput = JsonUtil.parseObjectFromStream(input, ServerlessInput.class);
@@ -53,9 +48,9 @@ public class PostDeviceHandler implements RequestStreamHandler {
 				
 				Map<String, AttributeValue> attributes = InternalUtils.toAttributeValues(Item.fromJSON(deviceStr));
 				attributes.putIfAbsent(DEVICE_TABLE_ID_NAME, new AttributeValue().withS(device.getId()));
-				attributes.put(DEVICE_TABLE_KEY_NAME, new AttributeValue().withS(device.getPatientId()));
+				attributes.put(DEVICE_TABLE_KEY_NAME, new AttributeValue().withS(device.getType().getValue()));
 
-				addAttributes(attributes);
+				addAttributes(Constants.DEVICE_TABLE_NAME, attributes);
 
 				serverlessOutput.setStatusCode(StatusCode.SUCCESS.getCode());
 				serverlessOutput.setBody(JsonUtil.convertToString(device));
@@ -81,11 +76,6 @@ public class PostDeviceHandler implements RequestStreamHandler {
 				throw exe;
 			}
 		}
-	}
-
-	public void addAttributes(Map<String, AttributeValue> attributes) {
-		AmazonDynamoDB dynamoDb = AmazonDynamoDBClientBuilder.standard().build();
-		dynamoDb.putItem(new PutItemRequest().withTableName(DEVICE_TABLE_NAME).withItem(attributes));
 	}
 
 }

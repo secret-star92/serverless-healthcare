@@ -21,7 +21,17 @@
         "Description" : "AWS User region.",
         "MinLength" : "1"
       },
-   "ProviderTableName" : {
+    "PatientDeviceTableName" : {
+        "Type" : "String",
+        "Description" : "Name of DynamoDB table used to store the PatientDevice metadata.",
+        "MinLength" : "1"
+      },   
+    "HeartRateTableName" : {
+        "Type" : "String",
+        "Description" : "Name of DynamoDB table used to store the HeartRate metadata.",
+        "MinLength" : "1"
+      },         
+    "ProviderTableName" : {
         "Type" : "String",
         "Description" : "Name of DynamoDB table used to store the Provider metadata. If left blank, AWS CloudFormation would manage this resource.",
         "MinLength" : "0"
@@ -55,6 +65,57 @@
     "CreateDeviceTable" : {"Fn::Equals" : [{"Ref" : "DeviceTableName"}, ""]}
   },
   "Resources": {
+    "PostPatientDeviceHandler": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "Handler": "com.amazonaws.healthcare.function.PostPatientDeviceHandler",
+        "Runtime" : "java8",
+        "CodeUri" : "./target/healthcare-1.0.0.jar",
+        "Policies": [
+          "AmazonDynamoDBReadOnlyAccess", "AWSLambdaFullAccess"
+        ],
+        "Environment" : {
+          "Variables" : {
+            "PATIENT_DEVICE_TABLE_NAME" : { "Ref" : "PatientDeviceTableName" }
+          }
+        },
+        "Events": {
+          "PutResource": {
+            "Type": "Api",
+            "Properties": {
+              "Path": "/patients/{patientId}/devices",
+              "Method": "post"
+            }
+          }
+        }
+      }
+    },    
+    "GetHeartRateHandler": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "Handler": "com.amazonaws.healthcare.function.GetHeartRateHandler",
+        "Runtime" : "java8",
+        "CodeUri" : "./target/healthcare-1.0.0.jar",
+        "Policies": [
+          "AmazonDynamoDBReadOnlyAccess", "AWSLambdaFullAccess"
+        ],
+        "Environment" : {
+          "Variables" : {
+            "HEART_RATE_TABLE_NAME" : { "Ref" : "HeartRateTableName" },
+            "PATIENT_DEVICE_TABLE_NAME" : { "Ref" : "PatientDeviceTableName" }
+          }
+        },
+        "Events": {
+          "GetResource": {
+            "Type": "Api",
+            "Properties": {
+              "Path": "/patients/{patientId}/heartrate",
+              "Method": "get"
+            }
+          }
+        }
+      }
+    },     
     "PostSignInHandler": {
       "Type": "AWS::Serverless::Function",
       "Properties": {
@@ -73,7 +134,7 @@
           }
         },
         "Events": {
-          "GetResource": {
+          "PutResource": {
             "Type": "Api",
             "Properties": {
               "Path": "/signin",
@@ -100,7 +161,7 @@
           }
         },
         "Events": {
-          "GetResource": {
+          "PutResource": {
             "Type": "Api",
             "Properties": {
               "Path": "/signup",

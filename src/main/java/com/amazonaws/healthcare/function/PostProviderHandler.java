@@ -23,9 +23,7 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 
-public class PostProviderHandler implements RequestStreamHandler {
-	// DynamoDB table name for storing Provider metadata.
-	private static final String PROVIDER_TABLE_NAME = System.getenv("PROVIDER_TABLE_NAME");
+public class PostProviderHandler implements RequestStreamHandler, DynamodbHandler {
 	// DynamoDB table attribute name for storing provider id.
 	private static final String PROVIDER_TABLE_ID_NAME = "id";
 	// DynamoDB table attribute name for sort key
@@ -37,7 +35,7 @@ public class PostProviderHandler implements RequestStreamHandler {
 
 		Set<String> errorMessages = new LinkedHashSet<>();
 
-		logger.log(String.format("Provider table name from system environment %s", PROVIDER_TABLE_NAME));
+		logger.log(String.format("Provider table name from system environment %s", Constants.PROVIDER_TABLE_NAME));
 		ServerlessOutput serverlessOutput = new ServerlessOutput();
 		try {
 			ServerlessInput serverlessInput = JsonUtil.parseObjectFromStream(input, ServerlessInput.class);
@@ -53,7 +51,7 @@ public class PostProviderHandler implements RequestStreamHandler {
 				attributes.putIfAbsent(PROVIDER_TABLE_ID_NAME, new AttributeValue().withS(provider.getId()));
 				attributes.put(PROVIDER_TABLE_KEY_NAME, new AttributeValue().withS(provider.getMobileNumber()));
 
-				addAttributes(attributes);
+				addAttributes(Constants.PATIENT_TABLE_NAME, attributes);
 
 				serverlessOutput.setStatusCode(StatusCode.SUCCESS.getCode());
 				serverlessOutput.setBody(JsonUtil.convertToString(provider));
@@ -79,11 +77,6 @@ public class PostProviderHandler implements RequestStreamHandler {
 				throw exe;
 			}
 		}
-	}
-
-	public void addAttributes(Map<String, AttributeValue> attributes) {
-		AmazonDynamoDB dynamoDb = AmazonDynamoDBClientBuilder.standard().build();
-		dynamoDb.putItem(new PutItemRequest().withTableName(PROVIDER_TABLE_NAME).withItem(attributes));
 	}
 
 }

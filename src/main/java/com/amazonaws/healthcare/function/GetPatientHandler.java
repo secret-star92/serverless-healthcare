@@ -23,7 +23,9 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 
-public class PostPatientHandler implements RequestStreamHandler, DynamodbHandler {
+public class GetPatientHandler implements RequestStreamHandler {
+	// DynamoDB table name for storing Patient metadata.
+	private static final String PATIENT_TABLE_NAME = System.getenv("PATIENT_TABLE_NAME");
 	// DynamoDB table attribute name for storing patient id.
 	private static final String PATIENT_TABLE_ID_NAME = "id";
 	// DynamoDB table attribute name for sort key
@@ -35,7 +37,7 @@ public class PostPatientHandler implements RequestStreamHandler, DynamodbHandler
 
 		Set<String> errorMessages = new LinkedHashSet<>();
 
-		logger.log(String.format("Patient table name from system environment %s", Constants.PATIENT_TABLE_NAME));
+		logger.log(String.format("Patient table name from system environment %s", PATIENT_TABLE_NAME));
 		ServerlessOutput serverlessOutput = new ServerlessOutput();
 		try {
 			ServerlessInput serverlessInput = JsonUtil.parseObjectFromStream(input, ServerlessInput.class);
@@ -52,7 +54,7 @@ public class PostPatientHandler implements RequestStreamHandler, DynamodbHandler
 				attributes.putIfAbsent(PATIENT_TABLE_ID_NAME, new AttributeValue().withS(patient.getId()));
 				attributes.put(PATIENT_TABLE_KEY_NAME, new AttributeValue().withS(patient.getProviderId()));
 
-				addAttributes(Constants.PATIENT_TABLE_NAME, attributes);
+				addAttributes(attributes);
 
 				serverlessOutput.setStatusCode(StatusCode.SUCCESS.getCode());
 				serverlessOutput.setBody(JsonUtil.convertToString(patient));
@@ -80,9 +82,9 @@ public class PostPatientHandler implements RequestStreamHandler, DynamodbHandler
 		}
 	}
 
-	/*public void addAttributes(Map<String, AttributeValue> attributes) {
+	public void addAttributes(Map<String, AttributeValue> attributes) {
 		AmazonDynamoDB dynamoDb = AmazonDynamoDBClientBuilder.standard().build();
-		dynamoDb.putItem(new PutItemRequest().withTableName(Constants.PATIENT_TABLE_NAME).withItem(attributes));
-	}*/
+		dynamoDb.putItem(new PutItemRequest().withTableName(PATIENT_TABLE_NAME).withItem(attributes));
+	}
 
 }
