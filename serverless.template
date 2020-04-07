@@ -1,6 +1,11 @@
 {
   "Description": "Healthcare service.",
   "Parameters" : {
+    "SenderEmail" : {
+        "Type" : "String",
+        "Description" : "Sender Email",
+        "MinLength" : "1"
+      }, 
     "CognitoUserPoolId" : {
         "Type" : "String",
         "Description" : "Cognito USER POOL id.",
@@ -65,6 +70,34 @@
     "CreateDeviceTable" : {"Fn::Equals" : [{"Ref" : "DeviceTableName"}, ""]}
   },
   "Resources": {
+    "PostSESHandler": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "Handler": "com.amazonaws.healthcare.function.PostSESHandler",
+        "Runtime" : "java8",
+        "CodeUri" : "./target/healthcare-1.0.0.jar",
+        "Policies": [
+          "AmazonDynamoDBReadOnlyAccess", "AWSLambdaFullAccess", "AmazonSESFullAccess"
+        ],
+        "Environment" : {
+          "Variables" : {
+            "EMAIL_FROM" : { "Ref" : "SenderEmail" },
+            "PATIENT_DEVICE_TABLE_NAME" : { "Ref" : "PatientDeviceTableName" },
+            "PROVIDER_TABLE_NAME" : { "Fn::If" : ["CreateProviderTable", {"Ref":"ProviderTable"}, { "Ref" : "ProviderTableName" } ] },
+            "PATIENT_TABLE_NAME" : { "Fn::If" : ["CreatePatientTable", {"Ref":"PatientTable"}, { "Ref" : "PatientTableName" } ] }
+          }
+        },
+        "Events": {
+          "PutResource": {
+            "Type": "Api",
+            "Properties": {
+              "Path": "/email",
+              "Method": "post"
+            }
+          }
+        }
+      }
+    },      
     "PostPatientDeviceHandler": {
       "Type": "AWS::Serverless::Function",
       "Properties": {

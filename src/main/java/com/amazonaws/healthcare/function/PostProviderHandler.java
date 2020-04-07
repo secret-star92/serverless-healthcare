@@ -47,11 +47,12 @@ public class PostProviderHandler implements RequestStreamHandler, DynamodbHandle
 
 			if (isValid) {
 
-				Map<String, AttributeValue> attributes = InternalUtils.toAttributeValues(Item.fromJSON(providerStr));
+				/*Map<String, AttributeValue> attributes = InternalUtils.toAttributeValues(Item.fromJSON(providerStr));
 				attributes.putIfAbsent(PROVIDER_TABLE_ID_NAME, new AttributeValue().withS(provider.getId()));
 				attributes.put(PROVIDER_TABLE_KEY_NAME, new AttributeValue().withS(provider.getMobileNumber()));
 
-				addAttributes(Constants.PATIENT_TABLE_NAME, attributes);
+				addAttributes(Constants.PATIENT_TABLE_NAME, attributes);*/
+				save(provider);
 
 				serverlessOutput.setStatusCode(StatusCode.SUCCESS.getCode());
 				serverlessOutput.setBody(JsonUtil.convertToString(provider));

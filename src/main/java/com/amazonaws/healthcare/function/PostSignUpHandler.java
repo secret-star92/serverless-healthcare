@@ -43,7 +43,7 @@ public class PostSignUpHandler implements RequestStreamHandler {
 	// private String CLIENT_APP_ID;
 	private String FED_POOL_ID;
 	private String CUSTOMDOMAIN;
-	private static final String REGION = System.getenv("REGION");
+	
 	// DynamoDB table name for storing Provider metadata.
 	private static final String CLIENT_APP_ID = System.getenv("CLIENT_APP_ID");
     private static final String USER_POOL_ID= System.getenv("USER_POOL_ID");
@@ -54,7 +54,7 @@ public class PostSignUpHandler implements RequestStreamHandler {
 
 	AWSCognitoIdentityProvider cognitoIdentityProvider = AWSCognitoIdentityProviderClientBuilder.standard()
 			.withCredentials(new ProfileCredentialsProvider("default"))
-			.withRegion(Regions.fromName(REGION)).build();
+			.withRegion(Regions.fromName(Constants.REGION)).build();
 	
 	@Override
 
@@ -64,7 +64,7 @@ public class PostSignUpHandler implements RequestStreamHandler {
 
 		Set<String> errorMessages = new LinkedHashSet<>();
 
-		logger.log(String.format("Cognito REGION %s , CLIENT_APP_ID %s ", REGION, CLIENT_APP_ID));
+		logger.log(String.format("Cognito REGION %s , CLIENT_APP_ID %s ", Constants.REGION, CLIENT_APP_ID));
 		ServerlessOutput serverlessOutput = new ServerlessOutput();
 		try {
 			ServerlessInput serverlessInput = JsonUtil.parseObjectFromStream(input, ServerlessInput.class);

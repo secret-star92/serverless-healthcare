@@ -46,7 +46,7 @@ public class JsonUtil {
 
 	public static <T> T parseObjectFromBytes(byte[] body, Class<T> valueType)
 			throws JsonParseException, JsonMappingException, IOException {
-		ObjectMapper objectMapper = new ObjectMapper();
+		ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 		return objectMapper.readValue(body, valueType);
 
 	}

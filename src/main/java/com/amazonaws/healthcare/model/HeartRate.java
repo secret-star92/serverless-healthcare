@@ -7,6 +7,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
+import javax.validation.constraints.NotEmpty;
+
 import com.amazonaws.healthcare.util.LocalDateTimeSerializer;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
@@ -18,10 +20,12 @@ import lombok.Data;
  */
 @Data
 public class HeartRate {
+	@NotEmpty
 	private String deviceId;
-//	@JsonDeserialize(using = LocalDateTimeDeserializer.class)
 	@JsonSerialize(using = LocalDateTimeSerializer.class)
 	private LocalDateTime timestamp;
+	@NotEmpty
+	private String patientId;
 	private int value;
 
 	public void setTimestamp(long _timestamp) {

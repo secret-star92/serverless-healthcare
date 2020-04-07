@@ -7,19 +7,26 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import com.amazonaws.healthcare.model.DeviceStatus;
 import com.amazonaws.healthcare.model.HeartRate;
 import com.amazonaws.healthcare.model.PatientDeviceInfo;
 import com.amazonaws.healthcare.model.ServerlessInput;
 import com.amazonaws.healthcare.model.ServerlessOutput;
 import com.amazonaws.healthcare.util.JsonUtil;
+import com.amazonaws.healthcare.util.SensorType;
 import com.amazonaws.healthcare.util.StatusCode;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBQueryExpression;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.Item;
 import com.amazonaws.services.dynamodbv2.document.ItemCollection;
@@ -28,6 +35,7 @@ import com.amazonaws.services.dynamodbv2.document.QueryOutcome;
 import com.amazonaws.services.dynamodbv2.document.RangeKeyCondition;
 import com.amazonaws.services.dynamodbv2.document.Table;
 import com.amazonaws.services.dynamodbv2.document.spec.QuerySpec;
+import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
@@ -53,27 +61,30 @@ public class GetHeartRateHandler implements RequestStreamHandler, DynamodbHandle
 			ServerlessInput serverlessInput = JsonUtil.parseObjectFromStream(input, ServerlessInput.class);
 
 			String patientId = (String) serverlessInput.getPathParameters().get(PATIENT_ID);
-            if(serverlessInput.getQueryStringParameters()!=null && serverlessInput.getQueryStringParameters().get("todayData") != null) {
-            	todayData = Boolean.parseBoolean((String) serverlessInput.getQueryStringParameters().get("todayData"));
-            }
-			 
+			if (serverlessInput.getQueryStringParameters() != null
+					&& serverlessInput.getQueryStringParameters().get("todayData") != null) {
+				todayData = Boolean.parseBoolean((String) serverlessInput.getQueryStringParameters().get("todayData"));
+			}
+
 			logger.log(String.format("Heart rate patientId %s, todayData= %s ", patientId, todayData));
 
 			boolean isValid = StringUtils.isNullOrEmpty(patientId);
 
 			if (!isValid) {
 
-				PatientDeviceInfo patientDeviceInfo = getActiveHeartRateSensor(patientId);
+				List<PatientDeviceInfo> patientDeviceInfos = getActiveHeartRateSensor(patientId);
 
-				logger.log(String.format("Patient DeviceInfo %s", patientDeviceInfo));
+				patientDeviceInfos.stream().forEach(d-> System.out.println(String.format("Patient DeviceInfo %s", d)));
 
-				if (todayData != null && todayData) {
-					serverlessOutput
-							.setBody(JsonUtil.convertToString(getTodayHeartRateData(patientDeviceInfo.getDeviceId())));
-				} else {
-					serverlessOutput.setBody(
-							JsonUtil.convertToString(getLast10MinutesHeartRateData(patientDeviceInfo.getDeviceId())));
+				for (PatientDeviceInfo patientDeviceInfo : patientDeviceInfos) {
+					if (todayData != null && todayData) {
+						serverlessOutput.setBody(
+								getTodayHeartRateData(patientDeviceInfo.getDeviceId()));
+					} else {
+						serverlessOutput.setBody(getLast10MinutesHeartRateData(patientDeviceInfo.getDeviceId()));
+					}
 				}
+
 				serverlessOutput.setStatusCode(StatusCode.SUCCESS.getCode());
 
 			} else {
@@ -100,45 +111,37 @@ public class GetHeartRateHandler implements RequestStreamHandler, DynamodbHandle
 		}
 	}
 
-	public PatientDeviceInfo getActiveHeartRateSensor(String patinetId) {
-		PatientDeviceInfo deviceInfo = null;
+	public List<PatientDeviceInfo> getActiveHeartRateSensor(String patinetId) {
+		//List<PatientDeviceInfo> deviceInfos = new ArrayList<PatientDeviceInfo>();
 
 		AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard().build();
-		DynamoDB dynamoDB = new DynamoDB(client);
-		Table table = dynamoDB.getTable(Constants.PATIENT_DEVICE_TABLE_NAME);
+		//DynamoDB dynamoDB = new DynamoDB(client);
+		//Table table = dynamoDB.getTable(Constants.PATIENT_DEVICE_TABLE_NAME);
 
-		ItemCollection<QueryOutcome> items = table.query(new KeyAttribute("patientId", patinetId));
+		//ItemCollection<QueryOutcome> items = table.query(new KeyAttribute("patient_id", patinetId));
+		Map<String, AttributeValue> eav = new HashMap<String, AttributeValue>();
+	    eav.put(":val1", new AttributeValue().withS(patinetId));
+		
+		DynamoDBQueryExpression<PatientDeviceInfo> queryExpression = new DynamoDBQueryExpression<PatientDeviceInfo>()
+		            .withKeyConditionExpression("patient_id = :val1").withExpressionAttributeValues(eav);
+		DynamoDBMapper mapper = new DynamoDBMapper(client);
+		return mapper.query(PatientDeviceInfo.class, queryExpression).stream().filter(d-> SensorType.HEART_RATE.equals(d.getSensorType())
+				&& DeviceStatus.ACTIVE.equals(d.getDeviceStatus())).collect(Collectors.toList());
 
-		Iterator<Item> iterator = items.iterator();
-		Item item = null;
-		StringBuilder resultStr = new StringBuilder();
-		while (iterator.hasNext()) {
-			item = iterator.next();
-			resultStr.append(item.toJSONPretty());
-			if (deviceInfo == null) {
-				try {
-					deviceInfo = JsonUtil.parseObjectFromBytes(item.toJSONPretty().getBytes(), PatientDeviceInfo.class);
-				} catch (JsonParseException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (JsonMappingException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+/*		items.forEach(item -> {
+			PatientDeviceInfo deviceInfo;
+			try {
+				deviceInfo = JsonUtil.parseObjectFromBytes(item.toJSONPretty().getBytes(), PatientDeviceInfo.class);
+				if (deviceInfo != null && SensorType.HEART_RATE.equals(deviceInfo.getSensorType())
+						&& DeviceStatus.ACTIVE.equals(deviceInfo.getDeviceStatus())) {
+					deviceInfos.add(deviceInfo);
 				}
+			} catch (Exception exe) {
+				logger.log(String.format("internal error occurred  %s", exe.toString()));
+				throw new RuntimeException(exe);
 			}
-			logger.log(resultStr.toString());
-		}
-
-		// Map<String, AttributeValue> keyAttributes = new LinkedHashMap<String,
-		// AttributeValue>();
-		// keyAttributes.put("patient_id", new AttributeValue().withS(patinetId));
-
-		// return getItemById(Constants.PATIENT_DEVICE_TABLE_NAME, keyAttributes,
-		// PatientDeviceInfo.class);
-		return deviceInfo;
+		});
+		return deviceInfos;*/
 	}
 
 	public String getTodayHeartRateData(String deviceId) throws JsonParseException, JsonMappingException, IOException {
@@ -156,23 +159,23 @@ public class GetHeartRateHandler implements RequestStreamHandler, DynamodbHandle
 
 		Iterator<Item> iterator = items.iterator();
 		Item item = null;
-		List<HeartRate> hRList=new ArrayList<>();
+		List<HeartRate> hRList = new ArrayList<>();
 		while (iterator.hasNext()) {
 			item = iterator.next();
-			logger.log("PAYLOAD : %s"+ item.get("payload"));
-			
-			HeartRate heartRate=JsonUtil.parseObjectFromBytes(item.getJSON("payload").getBytes(), HeartRate.class);
-			
-			logger.log("HeartRate PAYLOAD : "+ heartRate);
-			
+			logger.log("PAYLOAD : %s" + item.get("payload"));
+
+			HeartRate heartRate = JsonUtil.parseObjectFromBytes(item.getJSON("payload").getBytes(), HeartRate.class);
+
+			logger.log("HeartRate PAYLOAD : " + heartRate);
+
 			hRList.add(heartRate);
-			
-			
+
 		}
 		return JsonUtil.convertToString(hRList);
 	}
 
-	public String getLast10MinutesHeartRateData(String deviceId) throws JsonParseException, JsonMappingException, IOException {
+	public String getLast10MinutesHeartRateData(String deviceId)
+			throws JsonParseException, JsonMappingException, IOException {
 		AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard().build();
 		DynamoDB dynamoDB = new DynamoDB(client);
 
@@ -187,18 +190,17 @@ public class GetHeartRateHandler implements RequestStreamHandler, DynamodbHandle
 
 		Iterator<Item> iterator = items.iterator();
 		Item item = null;
-		List<HeartRate> hRList=new ArrayList<>();
+		List<HeartRate> hRList = new ArrayList<>();
 		while (iterator.hasNext()) {
 			item = iterator.next();
-			logger.log("PAYLOAD : %s"+ item.get("payload"));
-			
-			HeartRate heartRate=JsonUtil.parseObjectFromBytes(item.getJSON("payload").getBytes(), HeartRate.class);
-			
-			logger.log("HeartRate PAYLOAD : "+ heartRate);
-			
+			logger.log("PAYLOAD : %s" + item.get("payload"));
+
+			HeartRate heartRate = JsonUtil.parseObjectFromBytes(item.getJSON("payload").getBytes(), HeartRate.class);
+
+			logger.log("HeartRate PAYLOAD : " + heartRate);
+
 			hRList.add(heartRate);
-			
-			
+
 		}
 		return JsonUtil.convertToString(hRList);
 	}

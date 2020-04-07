@@ -21,4 +21,5 @@ public class Constants {
 	// DynamoDB table name for storing Device metadata.
 	public static final String DEVICE_TABLE_NAME = System.getenv("DEVICE_TABLE_NAME");
 	
+	public static final String REGION = System.getenv("REGION");
 }

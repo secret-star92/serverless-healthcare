@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.LinkedHashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -14,18 +13,11 @@ import com.amazonaws.healthcare.model.ServerlessInput;
 import com.amazonaws.healthcare.model.ServerlessOutput;
 import com.amazonaws.healthcare.util.JsonUtil;
 import com.amazonaws.healthcare.util.StatusCode;
-import com.amazonaws.services.dynamodbv2.document.Item;
-import com.amazonaws.services.dynamodbv2.document.internal.InternalUtils;
-import com.amazonaws.services.dynamodbv2.model.AttributeValue;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 
 public class PostDeviceHandler implements RequestStreamHandler, DynamodbHandler {
-	// DynamoDB table attribute name for storing device id.
-	private static final String DEVICE_TABLE_ID_NAME = "id";
-	// DynamoDB table attribute name for sort key
-	private static final String DEVICE_TABLE_KEY_NAME = "type";
 
 	@Override
 	public void handleRequest(InputStream input, OutputStream output, Context context) throws IOException {
@@ -46,11 +38,12 @@ public class PostDeviceHandler implements RequestStreamHandler, DynamodbHandler 
 			if (isValid) {
 				device.setId(UUID.randomUUID().toString());
 				
-				Map<String, AttributeValue> attributes = InternalUtils.toAttributeValues(Item.fromJSON(deviceStr));
-				attributes.putIfAbsent(DEVICE_TABLE_ID_NAME, new AttributeValue().withS(device.getId()));
-				attributes.put(DEVICE_TABLE_KEY_NAME, new AttributeValue().withS(device.getType().getValue()));
+				//Map<String, AttributeValue> attributes = InternalUtils.toAttributeValues(Item.fromJSON(deviceStr));
+				//attributes.putIfAbsent(DEVICE_TABLE_ID_NAME, new AttributeValue().withS(device.getId()));
+				//attributes.put(DEVICE_TABLE_KEY_NAME, new AttributeValue().withS(device.getType().name()));
 
-				addAttributes(Constants.DEVICE_TABLE_NAME, attributes);
+				//addAttributes(Constants.DEVICE_TABLE_NAME, attributes);
+				save(device);
 
 				serverlessOutput.setStatusCode(StatusCode.SUCCESS.getCode());
 				serverlessOutput.setBody(JsonUtil.convertToString(device));

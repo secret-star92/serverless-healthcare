@@ -14,8 +14,6 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum SensorType {
 
-	HEART_RATE("Heart Rate");
-
-	private String value;
+	HEART_RATE
 
 }
