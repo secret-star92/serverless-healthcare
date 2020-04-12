@@ -23,12 +23,14 @@ AWS IoT core execute rules to store heartrate data into Heartrate DynamoDB table
 
 # API to Sign-in user using Cognito user pool, to retrieve 'Authorization' token
 * POST URL: https://{{AWS-IP}}/Prod/signin
+  <p>
 ''' java#
  {
 	"username":"user2",
 	"password":"Password@2",
  }
 '''
+</p>
 
 # API to Register 'Provider' 
 
@@ -46,11 +48,13 @@ AWS IoT core execute rules to store heartrate data into Heartrate DynamoDB table
 	
 }
 '''
+</p>
 
 # API to Register 'Patient' 
 
 * POST URL: https://{{AWS-IP}}/Prod/patients
   HEADER "Authorization": {{token}}	
+  <p>
 ''' java#
  {
 	"providerId":"dml2ZWsuZ3VwdGFAYWJjLmNvbQ==",
@@ -62,11 +66,13 @@ AWS IoT core execute rules to store heartrate data into Heartrate DynamoDB table
 	"dateOfBirth":"1980-03-01"
  }
 '''
+</p>
 
 # API to Register 'devices' 
 
 * POST URL: https://{{AWS-IP}}/Prod/devices
   HEADER "Authorization": {{token}}	
+  <p>
 ''' java#
  {
     "type":"HEART_RATE",
@@ -76,11 +82,13 @@ AWS IoT core execute rules to store heartrate data into Heartrate DynamoDB table
     "protocal":"mqtt"
  }
 '''
+</p>
 
 # API to Register Patient devices mapping
 
 * POST https://{{AWS-IP}}/Prod/patients/{{patientId}}/devices
   HEADER "Authorization": {{token}}	
+  <p>
 ''' java#
  {
     "deviceId": "8f825c04-09f5-4f44-9361-1dcf7248f886",
@@ -88,6 +96,7 @@ AWS IoT core execute rules to store heartrate data into Heartrate DynamoDB table
     "deviceStatus": "ACTIVE"
  }
 '''
+</p>
 
 # API to Retrieve heartrate, default it will return last 10 minutes heartrate data. to see full day heartrate pass 'todayData'=true query param
 
@@ -162,6 +171,9 @@ AWS IoT core execute rules to store heartrate data into Heartrate DynamoDB table
  
 
 # Kinesis realtime analytics SQL script to process heart rate data.
+  
+<p>
+
 ''' java#
     CREATE OR REPLACE STREAM "DESTINATION_SQL_STREAM" ("timestamp" timestamp, "patientId"  VARCHAR(200), "deviceId" VARCHAR(200), "value" INTEGER);
 	CREATE OR REPLACE PUMP "STREAM_PUMP" AS 
@@ -174,6 +186,7 @@ AWS IoT core execute rules to store heartrate data into Heartrate DynamoDB table
 	GROUP BY "patientId", "deviceId",
 	         STEP("SOURCE_SQL_STREAM_001".ROWTIME BY INTERVAL '60' SECOND) HAVING AVG("COL_value") > 120 OR AVG("COL_value") < 40;
 '''
+</p>
  
  
  
