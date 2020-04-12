@@ -117,7 +117,7 @@ AWS IoT core execute rules to store heartrate data into Heartrate DynamoDB table
 
 **PostPatinetHandler**, used to register patient and store data into patient table
 
-** patient table **
+**patient table**
 |Field 	| Details |
 |-------:|--------|
 |id 	|partition key, Patient’s Base64 encoded email ID|
@@ -130,7 +130,7 @@ AWS IoT core execute rules to store heartrate data into Heartrate DynamoDB table
 
 **PostDeviceHandler**, used to store Device info data into device table
 
-** device table **
+**device table**
 |Field 	| Details |
 |-------:|--------|
 |id 	|Device ID “UUID” string, partition key|
@@ -143,7 +143,7 @@ AWS IoT core execute rules to store heartrate data into Heartrate DynamoDB table
 
 **PostPatientDeviceHandler**, used to store Patient Device mapping info data into patient_device table
 
-** patient_device tableName** 
+**patient_device table** 
 |Field 	| Details |
 |-------:|--------|
 |patient_id |	partition key, Patient’s Base64 encoded email ID|
@@ -153,7 +153,7 @@ AWS IoT core execute rules to store heartrate data into Heartrate DynamoDB table
 
 **GetHeartRateHandler**, retrieve heartrate data from heartrate table
 
-** heartrate table**
+**heartrate table**
 |Field 	| Details |
 |-------:|--------|
 |deviceId|	partition key, deviceId |
