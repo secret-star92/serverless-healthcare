@@ -1,7 +1,7 @@
 # healthcare
 Healthcare app using AWS serverless architecture
 
-# Design 
+# Design Diagram
 
 ![Design Diagram](design.png)
 
@@ -13,28 +13,28 @@ AWS IoT core execute rules to store heartrate data into Heartrate DynamoDB table
  
 # API to Sign-up user to Cognito user pool.
 * POST URL: https://{{AWS-IP}}/Prod/signup
-'
+''' java#
  {
 	"username":"user2",
 	"password":"Password@2",
 	"email":"user2@gmail.com"
  }
-'
+'''
 
 # API to Sign-in user using Cognito user pool, to retrieve 'Authorization' token
 * POST URL: https://{{AWS-IP}}/Prod/signin
-'
+''' java#
  {
 	"username":"user2",
 	"password":"Password@2",
  }
-'
+'''
 
 # API to Register 'Provider' 
 
 * POST URL: https://{{AWS-IP}}/Prod/patients
   HEADER "Authorization": {{token}}	
-'
+''' java#
 {
 	"mobileNumber":"232323",
 	"email":"vivek.gupta@abc.com",
@@ -45,13 +45,13 @@ AWS IoT core execute rules to store heartrate data into Heartrate DynamoDB table
 	"status":"ACTIVE"
 	
 }
-'
+'''
 
 # API to Register 'Patient' 
 
 * POST URL: https://{{AWS-IP}}/Prod/patients
   HEADER "Authorization": {{token}}	
-'
+''' java#
  {
 	"providerId":"dml2ZWsuZ3VwdGFAYWJjLmNvbQ==",
 	"firstname":"Stieve",
@@ -61,13 +61,13 @@ AWS IoT core execute rules to store heartrate data into Heartrate DynamoDB table
 	"address":"USA",
 	"dateOfBirth":"1980-03-01"
  }
-'
+'''
 
 # API to Register 'devices' 
 
 * POST URL: https://{{AWS-IP}}/Prod/devices
   HEADER "Authorization": {{token}}	
-'
+''' java#
  {
     "type":"HEART_RATE",
     "deviceName":"sensor1",
@@ -75,19 +75,19 @@ AWS IoT core execute rules to store heartrate data into Heartrate DynamoDB table
     "port":8900,
     "protocal":"mqtt"
  }
-'
+'''
 
 # API to Register Patient devices mapping
 
 * POST https://{{AWS-IP}}/Prod/patients/{{patientId}}/devices
   HEADER "Authorization": {{token}}	
-'
+''' java#
  {
     "deviceId": "8f825c04-09f5-4f44-9361-1dcf7248f886",
     "sensorType":"HEART_RATE",
     "deviceStatus": "ACTIVE"
  }
-'
+'''
 
 # API to Retrieve heartrate, default it will return last 10 minutes heartrate data. to see full day heartrate pass 'todayData'=true query param
 
@@ -98,7 +98,7 @@ AWS IoT core execute rules to store heartrate data into Heartrate DynamoDB table
 
 ** PostProviderHandler, used to register primary health provider, it store provider data into provider dynamoDB table 
 
-** provider table 
+** provider table **
 
 |Field 	| Details |
 |-------:|--------|
@@ -114,7 +114,7 @@ AWS IoT core execute rules to store heartrate data into Heartrate DynamoDB table
 
 ** PostPatinetHandler, used to register patient and store data into patient table
 
-* patient table
+** patient table **
 |Field 	| Details |
 |-------:|--------|
 |id 	|partition key, Patient’s Base64 encoded email ID|
@@ -127,7 +127,7 @@ AWS IoT core execute rules to store heartrate data into Heartrate DynamoDB table
 
 ** PostDeviceHandler, used to store Device info data into device table
 
-* device table
+** device table **
 |Field 	| Details |
 |-------:|--------|
 |id 	|Device ID “UUID” string, partition key|
@@ -140,7 +140,7 @@ AWS IoT core execute rules to store heartrate data into Heartrate DynamoDB table
 
 ** PostPatientDeviceHandler, used to store Patient Device mapping info data into patient_device table
 
-* patient_device table
+** patient_device tableName** 
 |Field 	| Details |
 |-------:|--------|
 |patient_id |	partition key, Patient’s Base64 encoded email ID|
@@ -150,7 +150,7 @@ AWS IoT core execute rules to store heartrate data into Heartrate DynamoDB table
 
 ** GetHeartRateHandler, retrieve heartrate data from heartrate table
 
-* heartrate table
+** heartrate table**
 |Field 	| Details |
 |-------:|--------|
 |deviceId|	partition key, deviceId |
@@ -162,7 +162,7 @@ AWS IoT core execute rules to store heartrate data into Heartrate DynamoDB table
  
 
 # Kinesis realtime analytics SQL script to process heart rate data.
-'
+''' java#
     CREATE OR REPLACE STREAM "DESTINATION_SQL_STREAM" ("timestamp" timestamp, "patientId"  VARCHAR(200), "deviceId" VARCHAR(200), "value" INTEGER);
 	CREATE OR REPLACE PUMP "STREAM_PUMP" AS 
 	  INSERT INTO "DESTINATION_SQL_STREAM" 
@@ -173,7 +173,7 @@ AWS IoT core execute rules to store heartrate data into Heartrate DynamoDB table
 	FROM     "SOURCE_SQL_STREAM_001"
 	GROUP BY "patientId", "deviceId",
 	         STEP("SOURCE_SQL_STREAM_001".ROWTIME BY INTERVAL '60' SECOND) HAVING AVG("COL_value") > 120 OR AVG("COL_value") < 40;
-'
+'''
  
  
  
