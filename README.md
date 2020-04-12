@@ -13,30 +13,28 @@ AWS IoT core execute rules to store heartrate data into Heartrate DynamoDB table
  
 # API to Sign-up user to Cognito user pool.
 * POST URL: https://{{AWS-IP}}/Prod/signup
-''' java#
+```
  {
 	"username":"user2",
 	"password":"Password@2",
 	"email":"user2@gmail.com"
  }
-'''
+```
 
 # API to Sign-in user using Cognito user pool, to retrieve 'Authorization' token
-* POST URL: https://{{AWS-IP}}/Prod/signin
-  <p>
-''' java#
+*POST URL:* https://{{AWS-IP}}/Prod/signin
+```
  {
 	"username":"user2",
 	"password":"Password@2",
  }
-'''
-</p>
+```
 
 # API to Register 'Provider' 
 
-* POST URL: https://{{AWS-IP}}/Prod/patients
-  HEADER "Authorization": {{token}}	
-''' java#
+*POST URL:* https://{{AWS-IP}}/Prod/patients
+  *HEADER* "Authorization": {{token}}	
+```
 {
 	"mobileNumber":"232323",
 	"email":"vivek.gupta@abc.com",
@@ -47,15 +45,14 @@ AWS IoT core execute rules to store heartrate data into Heartrate DynamoDB table
 	"status":"ACTIVE"
 	
 }
-'''
-</p>
+```
 
 # API to Register 'Patient' 
 
-* POST URL: https://{{AWS-IP}}/Prod/patients
-  HEADER "Authorization": {{token}}	
-  <p>
-''' java#
+*POST URL:* https://{{AWS-IP}}/Prod/patients
+  *HEADER* "Authorization": {{token}}	
+
+```
  {
 	"providerId":"dml2ZWsuZ3VwdGFAYWJjLmNvbQ==",
 	"firstname":"Stieve",
@@ -65,15 +62,14 @@ AWS IoT core execute rules to store heartrate data into Heartrate DynamoDB table
 	"address":"USA",
 	"dateOfBirth":"1980-03-01"
  }
-'''
-</p>
+```
 
 # API to Register 'devices' 
 
-* POST URL: https://{{AWS-IP}}/Prod/devices
-  HEADER "Authorization": {{token}}	
-  <p>
-''' java#
+*POST URL:* https://{{AWS-IP}}/Prod/devices
+ *HEADER* "Authorization": {{token}}	
+
+```
  {
     "type":"HEART_RATE",
     "deviceName":"sensor1",
@@ -81,33 +77,31 @@ AWS IoT core execute rules to store heartrate data into Heartrate DynamoDB table
     "port":8900,
     "protocal":"mqtt"
  }
-'''
-</p>
+```
 
 # API to Register Patient devices mapping
 
-* POST https://{{AWS-IP}}/Prod/patients/{{patientId}}/devices
+*POST URL:* https://{{AWS-IP}}/Prod/patients/{{patientId}}/devices
   HEADER "Authorization": {{token}}	
-  <p>
-''' java#
+
+```
  {
     "deviceId": "8f825c04-09f5-4f44-9361-1dcf7248f886",
     "sensorType":"HEART_RATE",
     "deviceStatus": "ACTIVE"
  }
-'''
-</p>
+```
 
 # API to Retrieve heartrate, default it will return last 10 minutes heartrate data. to see full day heartrate pass 'todayData'=true query param
 
-* GET https://{{AWS-IP}}/Prod/patients/{{patientId}}/heartrate
+*GET URL:* https://{{AWS-IP}}/Prod/patients/{{patientId}}/heartrate
   HEADER "Authorization": {{token}}	
   
 # Lambda functions.
 
-** PostProviderHandler, used to register primary health provider, it store provider data into provider dynamoDB table 
+**PostProviderHandler**, used to register primary health provider, it store provider data into provider dynamoDB table
 
-** provider table **
+**provider table**
 
 |Field 	| Details |
 |-------:|--------|
@@ -121,7 +115,7 @@ AWS IoT core execute rules to store heartrate data into Heartrate DynamoDB table
 |status	|ACTIVE/ INCATIVE|
 
 
-** PostPatinetHandler, used to register patient and store data into patient table
+**PostPatinetHandler**, used to register patient and store data into patient table
 
 ** patient table **
 |Field 	| Details |
@@ -134,7 +128,7 @@ AWS IoT core execute rules to store heartrate data into Heartrate DynamoDB table
 |address|	String|
 
 
-** PostDeviceHandler, used to store Device info data into device table
+**PostDeviceHandler**, used to store Device info data into device table
 
 ** device table **
 |Field 	| Details |
@@ -147,7 +141,7 @@ AWS IoT core execute rules to store heartrate data into Heartrate DynamoDB table
 |port|	integer|
 |protocal |	String, supported protocol;|
 
-** PostPatientDeviceHandler, used to store Patient Device mapping info data into patient_device table
+**PostPatientDeviceHandler**, used to store Patient Device mapping info data into patient_device table
 
 ** patient_device tableName** 
 |Field 	| Details |
@@ -157,7 +151,7 @@ AWS IoT core execute rules to store heartrate data into Heartrate DynamoDB table
 |senson_type |SensorType e.i Heart_RATE|
 |status|	ACTIVE/INACTIVE|
 
-** GetHeartRateHandler, retrieve heartrate data from heartrate table
+**GetHeartRateHandler**, retrieve heartrate data from heartrate table
 
 ** heartrate table**
 |Field 	| Details |
@@ -166,15 +160,14 @@ AWS IoT core execute rules to store heartrate data into Heartrate DynamoDB table
 |timestamp|	Sort key |
 |payload|	Heartrate data from heartrate simulator, contains heartrate and patientId|
 
-** KinesisHeartRateSESHandler, used to process 'KinesisAnalyticsOutputDeliveryEvent' event and  send an email to  patient's primary health provider.
+**KinesisHeartRateSESHandler**, used to process 'KinesisAnalyticsOutputDeliveryEvent' event and  send an email to  patient's primary health provider.
  
  
 
 # Kinesis realtime analytics SQL script to process heart rate data.
   
-<p>
 
-''' java#
+``` 
     CREATE OR REPLACE STREAM "DESTINATION_SQL_STREAM" ("timestamp" timestamp, "patientId"  VARCHAR(200), "deviceId" VARCHAR(200), "value" INTEGER);
 	CREATE OR REPLACE PUMP "STREAM_PUMP" AS 
 	  INSERT INTO "DESTINATION_SQL_STREAM" 
@@ -185,8 +178,8 @@ AWS IoT core execute rules to store heartrate data into Heartrate DynamoDB table
 	FROM     "SOURCE_SQL_STREAM_001"
 	GROUP BY "patientId", "deviceId",
 	         STEP("SOURCE_SQL_STREAM_001".ROWTIME BY INTERVAL '60' SECOND) HAVING AVG("COL_value") > 120 OR AVG("COL_value") < 40;
-'''
-</p>
+``` 
+
  
  
  
