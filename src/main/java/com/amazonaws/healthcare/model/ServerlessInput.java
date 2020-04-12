@@ -1,11 +1,6 @@
 package com.amazonaws.healthcare.model;
 
-import java.io.IOException;
 import java.util.Map;
-
-import com.amazonaws.healthcare.util.JsonUtil;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 
 public class ServerlessInput {
 
@@ -96,13 +91,6 @@ public class ServerlessInput {
     public void setBody(String body) {
         this.body = body;
     }
-   /* public  T getPayload(Class<T> t) throws JsonParseException, JsonMappingException, IOException {
-    	if(body!=null) {
-    		return JsonUtil.parseObjectFromBytes(body.getBytes(), t);
-    	}
-		return null;
-    	
-    }*/
     public ServerlessInput withBody(String body) {
         setBody(body);
         return this;

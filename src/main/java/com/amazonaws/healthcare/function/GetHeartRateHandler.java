@@ -74,12 +74,11 @@ public class GetHeartRateHandler implements RequestStreamHandler, DynamodbHandle
 
 				List<PatientDeviceInfo> patientDeviceInfos = getActiveHeartRateSensor(patientId);
 
-				patientDeviceInfos.stream().forEach(d-> System.out.println(String.format("Patient DeviceInfo %s", d)));
+				patientDeviceInfos.stream().forEach(d -> System.out.println(String.format("Patient DeviceInfo %s", d)));
 
 				for (PatientDeviceInfo patientDeviceInfo : patientDeviceInfos) {
 					if (todayData != null && todayData) {
-						serverlessOutput.setBody(
-								getTodayHeartRateData(patientDeviceInfo.getDeviceId()));
+						serverlessOutput.setBody(getTodayHeartRateData(patientDeviceInfo.getDeviceId()));
 					} else {
 						serverlessOutput.setBody(getLast10MinutesHeartRateData(patientDeviceInfo.getDeviceId()));
 					}
@@ -112,36 +111,19 @@ public class GetHeartRateHandler implements RequestStreamHandler, DynamodbHandle
 	}
 
 	public List<PatientDeviceInfo> getActiveHeartRateSensor(String patinetId) {
-		//List<PatientDeviceInfo> deviceInfos = new ArrayList<PatientDeviceInfo>();
-
 		AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard().build();
-		//DynamoDB dynamoDB = new DynamoDB(client);
-		//Table table = dynamoDB.getTable(Constants.PATIENT_DEVICE_TABLE_NAME);
 
-		//ItemCollection<QueryOutcome> items = table.query(new KeyAttribute("patient_id", patinetId));
 		Map<String, AttributeValue> eav = new HashMap<String, AttributeValue>();
-	    eav.put(":val1", new AttributeValue().withS(patinetId));
-		
-		DynamoDBQueryExpression<PatientDeviceInfo> queryExpression = new DynamoDBQueryExpression<PatientDeviceInfo>()
-		            .withKeyConditionExpression("patient_id = :val1").withExpressionAttributeValues(eav);
-		DynamoDBMapper mapper = new DynamoDBMapper(client);
-		return mapper.query(PatientDeviceInfo.class, queryExpression).stream().filter(d-> SensorType.HEART_RATE.equals(d.getSensorType())
-				&& DeviceStatus.ACTIVE.equals(d.getDeviceStatus())).collect(Collectors.toList());
+		eav.put(":val1", new AttributeValue().withS(patinetId));
 
-/*		items.forEach(item -> {
-			PatientDeviceInfo deviceInfo;
-			try {
-				deviceInfo = JsonUtil.parseObjectFromBytes(item.toJSONPretty().getBytes(), PatientDeviceInfo.class);
-				if (deviceInfo != null && SensorType.HEART_RATE.equals(deviceInfo.getSensorType())
-						&& DeviceStatus.ACTIVE.equals(deviceInfo.getDeviceStatus())) {
-					deviceInfos.add(deviceInfo);
-				}
-			} catch (Exception exe) {
-				logger.log(String.format("internal error occurred  %s", exe.toString()));
-				throw new RuntimeException(exe);
-			}
-		});
-		return deviceInfos;*/
+		DynamoDBQueryExpression<PatientDeviceInfo> queryExpression = new DynamoDBQueryExpression<PatientDeviceInfo>()
+				.withKeyConditionExpression("patient_id = :val1").withExpressionAttributeValues(eav);
+		DynamoDBMapper mapper = new DynamoDBMapper(client);
+		return mapper.query(PatientDeviceInfo.class, queryExpression, getConfig(Constants.PATIENT_DEVICE_TABLE_NAME))
+				.stream().filter(d -> SensorType.HEART_RATE.equals(d.getSensorType())
+						&& DeviceStatus.ACTIVE.equals(d.getDeviceStatus()))
+				.collect(Collectors.toList());
+
 	}
 
 	public String getTodayHeartRateData(String deviceId) throws JsonParseException, JsonMappingException, IOException {

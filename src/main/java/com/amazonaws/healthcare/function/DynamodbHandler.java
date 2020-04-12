@@ -12,6 +12,7 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapperConfig;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapperConfig.TableNameOverride;
 import com.amazonaws.services.dynamodbv2.document.DynamoDB;
 import com.amazonaws.services.dynamodbv2.document.ItemCollection;
 import com.amazonaws.services.dynamodbv2.document.KeyAttribute;
@@ -27,22 +28,22 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public interface DynamodbHandler {
 
-	public default <T> void save(T object) {
+	public default <T> void save(T object,  String tableName) {
 		AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard().build();
 		DynamoDBMapper mapper = new DynamoDBMapper(client);
-		mapper.save(object);
+		mapper.save(object,  getConfig(tableName));
 	}
 
-	public default <T> T load(T keyObject ) {
+	public default <T> T load(T keyObject, String tableName ) {
 		AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard().build();
 		DynamoDBMapper mapper = new DynamoDBMapper(client);
-		return mapper.load(keyObject, DynamoDBMapperConfig.DEFAULT);
+		return mapper.load(keyObject, getConfig(tableName) );
 	}
 
-	public default <T> T load(Class<T> clazz, Object hashKey, Object rangeKey) {
+	public default <T> T load(Class<T> clazz, Object hashKey, Object rangeKey, String tableName) {
 		AmazonDynamoDB client = AmazonDynamoDBClientBuilder.standard().build();
 		DynamoDBMapper mapper = new DynamoDBMapper(client);
-		return mapper.load(clazz, hashKey, rangeKey, DynamoDBMapperConfig.DEFAULT);
+		return mapper.load(clazz, hashKey, rangeKey, getConfig(tableName));
 	}	
 
 	public default ItemCollection<QueryOutcome> getItemListByKey(String tableName, KeyAttribute keyAttribute) {
@@ -68,5 +69,9 @@ public interface DynamodbHandler {
 	public static Map<String, String> convertToMap(Map<String, AttributeValue> attributesMap) {
 		return Optional.ofNullable(attributesMap).orElseGet(HashMap::new).entrySet().stream()
 				.collect(Collectors.toMap(Map.Entry::getKey, e -> ((AttributeValue) (e.getValue())).getS()));
+	}
+	
+	public default DynamoDBMapperConfig getConfig(String tableName) {
+		return (new TableNameOverride(tableName)).config();
 	}
 }

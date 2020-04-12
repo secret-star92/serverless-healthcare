@@ -3,17 +3,22 @@
  */
 package com.amazonaws.healthcare.model;
 
-import java.sql.Date;
-import java.util.Base64;
+import java.time.LocalDate;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
+import com.amazonaws.healthcare.util.LocalDateConverter;
+import com.amazonaws.healthcare.util.LocalDateDeserializer;
+import com.amazonaws.healthcare.util.LocalDateSerializer;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBRangeKey;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
+import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTypeConverted;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import lombok.Data;
 
@@ -26,13 +31,7 @@ import lombok.Data;
 public class Patient {
 
 	@DynamoDBHashKey(attributeName = "id")
-	public String getId() {
-		if (email != null) {
-			return Base64.getEncoder().encodeToString(email.getBytes());
-		}
-		return null;
-	}
-
+	String id;
 	@NotEmpty
 	@DynamoDBRangeKey(attributeName = "provider_id")
 	String providerId;
@@ -54,6 +53,9 @@ public class Patient {
 	String address;
 	@NotNull
 	@DynamoDBAttribute(attributeName = "date_of_birth")
-	Date dateOfBirth;
+	@DynamoDBTypeConverted(converter=LocalDateConverter.class )
+	@JsonDeserialize(using = LocalDateDeserializer.class )
+	@JsonSerialize(using= LocalDateSerializer.class)
+	LocalDate dateOfBirth;
 
 }

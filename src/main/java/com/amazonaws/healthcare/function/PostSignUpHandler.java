@@ -13,8 +13,6 @@ import java.util.Set;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
-import com.amazonaws.auth.AnonymousAWSCredentials;
-import com.amazonaws.auth.ClasspathPropertiesFileCredentialsProvider;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.healthcare.model.EntityValidator;
 import com.amazonaws.healthcare.model.ServerlessInput;
@@ -39,10 +37,7 @@ import com.amazonaws.util.Base64;
 import com.amazonaws.util.StringUtils;
 
 public class PostSignUpHandler implements RequestStreamHandler {
-	private String POOL_ID;
-	// private String CLIENT_APP_ID;
-	private String FED_POOL_ID;
-	private String CUSTOMDOMAIN;
+
 	
 	// DynamoDB table name for storing Provider metadata.
 	private static final String CLIENT_APP_ID = System.getenv("CLIENT_APP_ID");
@@ -50,7 +45,6 @@ public class PostSignUpHandler implements RequestStreamHandler {
 	private static final String SECRET_HASH = System.getenv("SECRET_HASH");
 	private final static String HMAC_SHA_256 = "HmacSHA256";
 
-	private static final String UTF8_CHARSET = "UTF-8";
 
 	AWSCognitoIdentityProvider cognitoIdentityProvider = AWSCognitoIdentityProviderClientBuilder.standard()
 			.withCredentials(new ProfileCredentialsProvider("default"))
@@ -75,17 +69,7 @@ public class PostSignUpHandler implements RequestStreamHandler {
 			boolean isValid = new EntityValidator<>().validate.isValid(user, errorMessages);
 
 			if (isValid) {
-			//	ClasspathPropertiesFileCredentialsProvider propertiesFileCredentialsProvider = 
-				//           new ClasspathPropertiesFileCredentialsProvider();
-				//AnonymousAWSCredentials awsCreds = new AnonymousAWSCredentials();
-	
 
-				/*
-				 * AWSCognitoIdentityProvider cognitoIdentityProvider =
-				 * AWSCognitoIdentityProviderClientBuilder.de .withCredentials(new
-				 * AWSStaticCredentialsProvider(awsCreds))
-				 * .withRegion(Regions.fromName(REGION)).build();
-				 */
 				SignUpRequest signUpRequest = new SignUpRequest();
 				signUpRequest.setClientId(CLIENT_APP_ID);
 				signUpRequest.setUsername(user.getUsername());

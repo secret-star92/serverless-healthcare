@@ -43,7 +43,7 @@ public class PostDeviceHandler implements RequestStreamHandler, DynamodbHandler 
 				//attributes.put(DEVICE_TABLE_KEY_NAME, new AttributeValue().withS(device.getType().name()));
 
 				//addAttributes(Constants.DEVICE_TABLE_NAME, attributes);
-				save(device);
+				save(device, Constants.DEVICE_TABLE_NAME);
 
 				serverlessOutput.setStatusCode(StatusCode.SUCCESS.getCode());
 				serverlessOutput.setBody(JsonUtil.convertToString(device));

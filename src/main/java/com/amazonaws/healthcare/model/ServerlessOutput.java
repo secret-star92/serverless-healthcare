@@ -1,6 +1,5 @@
 package com.amazonaws.healthcare.model;
 
-import java.io.Serializable;
 import java.util.Map;
 
 public class ServerlessOutput {

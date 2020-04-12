@@ -1,6 +1,5 @@
 package com.amazonaws.healthcare.util;
 import java.io.IOException;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.core.JsonParser;

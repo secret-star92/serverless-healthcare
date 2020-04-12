@@ -3,8 +3,6 @@
  */
 package com.amazonaws.healthcare.model;
 
-import java.util.Base64;
-
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -26,11 +24,7 @@ import lombok.Data;
 @DynamoDBTable(tableName="provider")
 public class Provider {
 	@DynamoDBHashKey(attributeName="id")
-	public String getId() {
-		if (email != null)
-			return Base64.getEncoder().encodeToString(email.getBytes());
-		return null;
-	}
+	String id;
 	@NotEmpty
 	@DynamoDBRangeKey(attributeName="mobile_number")	
 	String mobileNumber;	

@@ -3,6 +3,7 @@ package com.amazonaws.healthcare.function;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Base64;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -36,7 +37,10 @@ public class PostPatientHandler implements RequestStreamHandler, DynamodbHandler
 			boolean isValid = new EntityValidator<>().validate.isValid(patient, errorMessages);
 
 			if (isValid) {
-				save(patient);
+				if(patient.getId()==null) {
+					patient.setId(Base64.getEncoder().encodeToString(patient.getEmail().getBytes()));
+				}
+				save(patient, Constants.PATIENT_TABLE_NAME);
 				serverlessOutput.setStatusCode(StatusCode.SUCCESS.getCode());
 				serverlessOutput.setBody(JsonUtil.convertToString(patient));
 			} else {

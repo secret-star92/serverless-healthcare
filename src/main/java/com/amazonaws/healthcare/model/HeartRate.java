@@ -6,6 +6,7 @@ package com.amazonaws.healthcare.model;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 
 import javax.validation.constraints.NotEmpty;
 
@@ -28,8 +29,15 @@ public class HeartRate {
 	private String patientId;
 	private int value;
 
-	public void setTimestamp(long _timestamp) {
-		timestamp = LocalDateTime.ofInstant(Instant.ofEpochMilli(_timestamp), ZoneId.systemDefault());
+	public void setTimestamp(Object _timestamp) {
+		if(_timestamp instanceof Long) {
+			timestamp = LocalDateTime.ofInstant(Instant.ofEpochMilli((Long)_timestamp), ZoneId.systemDefault());
+		}else if(_timestamp instanceof String) {
+			timestamp = LocalDateTime.parse((String)_timestamp, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS"));
+		}
+		
 	}
 
+	
+	
 }

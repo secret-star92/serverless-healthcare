@@ -17,8 +17,12 @@ import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
 
 public class PostPatientDeviceHandler implements RequestStreamHandler, DynamodbHandler {
+	
+	private static final String PATIENT_ID = "patientId";
+	
 	@Override
 	public void handleRequest(InputStream input, OutputStream output, Context context) throws IOException {
+		
 		LambdaLogger logger = context.getLogger();
 
 		Set<String> errorMessages = new LinkedHashSet<>();
@@ -27,28 +31,18 @@ public class PostPatientDeviceHandler implements RequestStreamHandler, DynamodbH
 		ServerlessOutput serverlessOutput = new ServerlessOutput();
 		try {
 			ServerlessInput serverlessInput = JsonUtil.parseObjectFromStream(input, ServerlessInput.class);
+			String patientId = (String) serverlessInput.getPathParameters().get(PATIENT_ID);
 
 			String patientDeviceInfoStr = serverlessInput.getBody();
 			logger.log(String.format("Patient Device InfoStr payload  %s", patientDeviceInfoStr));
 			PatientDeviceInfo patientDeviceInfo = JsonUtil.parseObjectFromBytes(patientDeviceInfoStr.getBytes(),
 					PatientDeviceInfo.class);
 
+			patientDeviceInfo.setPatientId(patientId);
 			boolean isValid = new EntityValidator<>().validate.isValid(patientDeviceInfo, errorMessages);
 
 			if (isValid) {
-
-				/*
-				 * Map<String, AttributeValue> attributes =
-				 * InternalUtils.toAttributeValues(Item.fromJSON(patientDeviceInfoStr));
-				 * attributes.putIfAbsent(PATIENT_DEVICE_TABLE_ID_NAME, new
-				 * AttributeValue().withS(patientDeviceInfo.getPatientId()));
-				 * attributes.put(PATIENT_DEVICE__TABLE_KEY_NAME, new
-				 * AttributeValue().withS(patientDeviceInfo.getDeviceId()));
-				 * 
-				 * addAttributes(Constants.PATIENT_DEVICE_TABLE_NAME, attributes);
-				 */
-
-				save(patientDeviceInfo);
+				save(patientDeviceInfo, Constants.PATIENT_DEVICE_TABLE_NAME);
 				serverlessOutput.setStatusCode(StatusCode.SUCCESS.getCode());
 				serverlessOutput.setBody(JsonUtil.convertToString(patientDeviceInfo));
 			} else {
@@ -74,13 +68,5 @@ public class PostPatientDeviceHandler implements RequestStreamHandler, DynamodbH
 			}
 		}
 	}
-
-	/*
-	 * public void addAttributes(Map<String, AttributeValue> attributes) {
-	 * AmazonDynamoDB dynamoDb = AmazonDynamoDBClientBuilder.standard().build();
-	 * dynamoDb.putItem(new
-	 * PutItemRequest().withTableName(Constants.PATIENT_TABLE_NAME).withItem(
-	 * attributes)); }
-	 */
 
 }

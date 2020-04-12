@@ -70,6 +70,25 @@
     "CreateDeviceTable" : {"Fn::Equals" : [{"Ref" : "DeviceTableName"}, ""]}
   },
   "Resources": {
+    "KinesisHeartRateSESHandler": {
+      "Type": "AWS::Serverless::Function",
+      "Properties": {
+        "Handler": "com.amazonaws.healthcare.function.KinesisHeartRateSESHandler",
+        "Runtime" : "java8",
+        "CodeUri" : "./target/healthcare-1.0.0.jar",
+        "Policies": [
+          "AmazonDynamoDBReadOnlyAccess", "AWSLambdaFullAccess", "AmazonSESFullAccess"
+        ],
+        "Environment" : {
+          "Variables" : {
+            "EMAIL_FROM" : { "Ref" : "SenderEmail" },
+            "PATIENT_DEVICE_TABLE_NAME" : { "Ref" : "PatientDeviceTableName" },
+            "PROVIDER_TABLE_NAME" : { "Fn::If" : ["CreateProviderTable", {"Ref":"ProviderTable"}, { "Ref" : "ProviderTableName" } ] },
+            "PATIENT_TABLE_NAME" : { "Fn::If" : ["CreatePatientTable", {"Ref":"PatientTable"}, { "Ref" : "PatientTableName" } ] }
+          }
+        }
+      }
+    },    
     "PostSESHandler": {
       "Type": "AWS::Serverless::Function",
       "Properties": {

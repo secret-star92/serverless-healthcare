@@ -5,8 +5,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
-import java.util.Map;
+import java.util.List;
 import java.util.Set;
 
 import org.junit.Assert;
@@ -14,6 +15,7 @@ import org.junit.Test;
 
 import com.amazonaws.healthcare.function.PatientHandler;
 import com.amazonaws.healthcare.model.EntityValidator;
+import com.amazonaws.healthcare.model.HeartRate;
 import com.amazonaws.healthcare.model.Patient;
 import com.amazonaws.healthcare.model.ServerlessInput;
 import com.amazonaws.healthcare.util.JsonUtil;
@@ -56,13 +58,25 @@ public class PostPatientHandlerTest {
     @Test
     public void testBodyToMap() throws JsonParseException, JsonMappingException, IOException {
     	
-    	String body= "{\"id\":\"abc@gmail.com\",\"firstname\":\"Amit\",\"lastname\":\"Gupta\",\"specilization\":\"General Physician\",\"email\":\"abc@gmail.com\",\"mobileNumber\":\"891737283\",\"address\":\"ABC hospital\"}";
+    	//String body= "{\"id\":\"abc@gmail.com\",\"firstname\":\"Amit\",\"lastname\":\"Gupta\",\"specilization\":\"General Physician\",\"email\":\"abc@gmail.com\",\"mobileNumber\":\"891737283\",\"address\":\"ABC hospital\"}";
     	
     	
-    	Map attributes=JsonUtil.parseObjectFromBytes(body.getBytes(), Map.class);
-    	System.out.println(attributes);
+    	//Map attributes=JsonUtil.parseObjectFromBytes(body.getBytes(), Map.class);
+    	
+    	//Map<String, AttributeValue> attributesMap= DynamoDBUtil.convert(attributes);
     	
     	
+    	//System.out.println(attributes);
+    	
+    	String heartrate="{\"deviceId\":\"a738bba8-4b34-4c5a-ae5c-23c4396ec51c\",\"value\":78,\"timestamp\":1585982863842}";
+    	
+    	List<HeartRate> hList=new ArrayList<HeartRate>();
+    	
+    	
+    	hList.add(JsonUtil.parseObjectFromBytes(heartrate.getBytes(), HeartRate.class));
+    	hList.add(JsonUtil.parseObjectFromBytes(heartrate.getBytes(), HeartRate.class));
+    	
+    	System.out.println("HRATE:"+JsonUtil.convertToString(hList));
     	
     }
     
