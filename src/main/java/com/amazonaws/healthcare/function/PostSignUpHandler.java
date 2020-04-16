@@ -38,8 +38,6 @@ import com.amazonaws.util.StringUtils;
 
 public class PostSignUpHandler implements RequestStreamHandler {
 
-	
-	// DynamoDB table name for storing Provider metadata.
 	private static final String CLIENT_APP_ID = System.getenv("CLIENT_APP_ID");
     private static final String USER_POOL_ID= System.getenv("USER_POOL_ID");
 	private static final String SECRET_HASH = System.getenv("SECRET_HASH");
@@ -51,7 +49,6 @@ public class PostSignUpHandler implements RequestStreamHandler {
 			.withRegion(Regions.fromName(Constants.REGION)).build();
 	
 	@Override
-
 	public void handleRequest(InputStream input, OutputStream output, Context context) throws IOException {
 
 		LambdaLogger logger = context.getLogger();
@@ -155,14 +152,7 @@ public class PostSignUpHandler implements RequestStreamHandler {
 		}
 	}
 
-	/*
-	 * private String hmac(String stringToSign) { String signature = null; byte[]
-	 * data; byte[] rawHmac; try { data = stringToSign.getBytes(UTF8_CHARSET);
-	 * //rawHmac = mac.doFinal(data); Encoder encoder = Base64.getUrlEncoder();
-	 * signature = new String(encoder.encode(data)); } catch
-	 * (UnsupportedEncodingException e) { throw new RuntimeException(UTF8_CHARSET +
-	 * " is unsupported!", e); } return signature; }
-	 */
+
 	private AttributeType convertToAttributeType(String name, String value) {
 		AttributeType attributeType = new AttributeType();
 		attributeType.setName(name);
