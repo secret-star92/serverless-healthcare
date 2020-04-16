@@ -1,6 +1,6 @@
 {
   "httpMethod": "POST",
-  "body": "{\"firstname\":\"Amit\",\"lastname\":\"Gupta\",\"specilization\":\"General Physician\",\"email\":\"abc@gmail.com\",\"mobileNumber\":\"891737283\",\"address\":\"ABC hospital\",\"status\":\"ACTIVE\"}",
+  "body": "{\"providerId\":\"abc@gmail.com\",\"firstname\":\"Amit\",\"lastname\":\"Gupta\",\"email\":\"abc@gmail.com\",\"mobileNumber\":\"891737283\",\"address\":\"ABC hospital\", \"dateOfBirth\": \"2012-03-21\"}",
 
   "queryStringParameters": null,
   "multiValueQueryStringParameters": null,

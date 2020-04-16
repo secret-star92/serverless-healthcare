@@ -1,4 +1,4 @@
-package com.amazonaws.healthcare;
+package com.amazonaws.healthcare.function;
 
 import com.amazonaws.services.lambda.runtime.ClientContext;
 import com.amazonaws.services.lambda.runtime.CognitoIdentity;

@@ -1,4 +1,4 @@
-package com.amazonaws.healthcare;
+package com.amazonaws.healthcare.function;
 
 import java.io.IOException;
 import java.io.InputStream;
